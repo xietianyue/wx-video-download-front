@@ -361,16 +361,32 @@ export default function HomePage() {
         signal: AbortSignal.timeout(30000),
       });
 
-      const data = await res.json();
+      const responseData = await res.json();
 
-      if (!res.ok || !data.success) {
-        throw new Error(data.message || `服务器返回错误 (${res.status})`);
+      if (!res.ok) {
+        throw new Error(`服务器请求失败 (${res.status})`);
+      }
+
+      // 新接口返回格式适配
+      const errCode = responseData.errCode ?? responseData.data?.errCode;
+      const errMsg = responseData.errMsg || responseData.data?.errMsg || "解析失败，未返回视频信息";
+
+      if (errCode !== 0 || !responseData.data || !responseData.data.feedInfo) {
+        throw new Error(errMsg);
+      }
+
+      const feedInfo = responseData.data.feedInfo;
+      // 尝试提取视频链接 (兼容多个可能存放链接的字段)
+      const videoUrl = feedInfo.videoUrl || feedInfo.h264VideoInfo?.videoUrl || feedInfo.h265VideoInfo?.videoUrl;
+
+      if (!videoUrl) {
+        throw new Error("解析成功，但未能提取到视频播放地址");
       }
 
       setResult({
-        videoUrl: data.videoUrl,
-        title: data.title,
-        thumb: data.thumb,
+        videoUrl: videoUrl,
+        title: feedInfo.description,
+        thumb: feedInfo.coverUrl,
       });
       setStatus('success');
     } catch (err: unknown) {
