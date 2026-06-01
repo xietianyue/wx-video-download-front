@@ -25,7 +25,7 @@ import {
 // 配置常量（部署前修改这两个值）
 // ============================================================
 const TODAY_TOKEN = '51use888';
-const WORKER_API_URL = 'https://wx-video-api.51use.cn/api/parse';
+const WORKER_API_URL = 'https://wx-video-api.51use.cn/api/fetch_video_profile';
 const PRO_DOWNLOAD_LINK = 'https://tooldown.51use.cn/wx_video_download_20260601.zip';
 const WECHAT_OA_NAME = '51use';
 
