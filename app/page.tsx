@@ -19,6 +19,8 @@ import {
   Package,
   ChevronRight,
   X,
+  HelpCircle,
+  Home,
 } from 'lucide-react';
 
 // ============================================================
@@ -100,6 +102,8 @@ function AuthModal({
   const handleVerify = useCallback(() => {
     if (input === TODAY_TOKEN) {
       localStorage.setItem('sph_token', TODAY_TOKEN);
+      // 设置3天后过期 (毫秒)
+      localStorage.setItem('sph_token_expire', (Date.now() + 3 * 24 * 60 * 60 * 1000).toString());
       onSuccess();
     } else {
       setError('通行证错误，请重新获取');
@@ -165,22 +169,28 @@ function AuthModal({
           </div>
 
           {/* 获取引导 */}
-          <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4 mb-5">
-            <div className="flex gap-2.5 items-start">
-              <Radio className="text-green-400 shrink-0 mt-0.5" size={16} />
-              <div className="text-sm text-gray-300 leading-relaxed">
-                <p>📱 微信搜索并关注公众号</p>
-                <p className="font-bold text-green-400 my-1">
-                  【{WECHAT_OA_NAME}】
-                </p>
-                <p>
-                  回复关键字{' '}
-                  <span className="bg-green-500/20 text-green-300 px-1.5 py-0.5 rounded font-mono text-xs">
-                    视频号
-                  </span>{' '}
-                  即可自动获取今日最新通行证
-                </p>
+          <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4 sm:p-5 mb-5 flex flex-col sm:flex-row gap-4 sm:gap-5 items-center">
+            <div className="flex-1 w-full">
+              <div className="flex gap-2.5 items-start">
+                <Radio className="text-green-400 shrink-0 mt-0.5" size={16} />
+                <div className="text-sm text-gray-300 leading-relaxed">
+                  <p>📱 微信搜索或长按扫码关注</p>
+                  <p className="font-bold text-green-400 my-1.5 text-base">
+                    【{WECHAT_OA_NAME}】
+                  </p>
+                  <p>
+                    回复关键字{' '}
+                    <span className="bg-green-500/20 text-green-300 px-2 py-0.5 rounded font-mono text-xs">
+                      视频号
+                    </span>{' '}
+                    获取最新通行证
+                  </p>
+                </div>
               </div>
+            </div>
+            {/* 二维码展示区 */}
+            <div className="shrink-0 w-32 h-32 sm:w-36 sm:h-36 bg-white p-1.5 rounded-xl shadow-inner mx-auto">
+              <img src="/51use.jpg" alt="公众号二维码" className="w-full h-full object-cover rounded-lg" />
             </div>
           </div>
 
@@ -228,6 +238,95 @@ function AuthModal({
             >
               <CheckCircle size={16} />
               验证通行证
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ============================================================
+// 子组件：获取链接教程 Modal
+// ============================================================
+function TutorialModal({ onClose }: { onClose: () => void }) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      {/* 遮罩 */}
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+      
+      {/* Modal 主体 */}
+      <div className="relative modal-enter w-full max-w-2xl max-h-[85vh] overflow-y-auto">
+        <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-green-500/30 to-transparent pointer-events-none" />
+        <div className="relative bg-[#0d1520] rounded-2xl p-5 sm:p-8 border border-green-500/20 shadow-2xl">
+          <button onClick={onClose} className="absolute top-4 right-4 text-gray-500 hover:text-gray-300 z-10 bg-black/40 p-1.5 rounded-full transition-colors">
+            <X size={20} />
+          </button>
+          
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-12 h-12 rounded-xl bg-green-500/10 border border-green-500/30 flex items-center justify-center shrink-0">
+              <HelpCircle className="text-green-400" size={24} />
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-lg sm:text-xl">如何获取视频号分享链接？</h3>
+              <p className="text-gray-500 text-xs mt-1">Tutorial: How to get video link</p>
+            </div>
+          </div>
+
+          <div className="space-y-8">
+            {/* 手机端教程 */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="bg-green-500/20 text-green-400 px-2 py-1 rounded text-xs font-bold border border-green-500/30 shrink-0">方法一</span>
+                <h4 className="text-gray-200 font-medium text-base">手机端微信提取</h4>
+              </div>
+              <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+                1. 点击视频播放页底部的 <strong className="text-gray-200">分享按钮</strong>（如图左）<br/>
+                2. 在弹出的底部菜单栏中 <strong className="text-gray-200">向右滑动到底</strong><br/>
+                3. 点击选择 <strong className="text-green-400">复制链接</strong>（如图右）
+              </p>
+              <div className="grid grid-cols-2 gap-3 sm:gap-5">
+                <div className="rounded-xl overflow-hidden border border-white/10 bg-[#0a0f1a] relative group">
+                  <div className="absolute top-2 left-2 bg-black/60 text-white/50 text-[10px] px-2 py-0.5 rounded backdrop-blur">图1</div>
+                  <img src="/m_1.png" alt="手机端分享按钮" className="w-full h-auto object-contain max-h-[300px]" />
+                </div>
+                <div className="rounded-xl overflow-hidden border border-white/10 bg-[#0a0f1a] relative">
+                  <div className="absolute top-2 left-2 bg-black/60 text-white/50 text-[10px] px-2 py-0.5 rounded backdrop-blur">图2</div>
+                  <img src="/m_2.png" alt="手机端复制链接" className="w-full h-auto object-contain max-h-[300px]" />
+                </div>
+              </div>
+            </div>
+
+            <div className="h-px bg-white/5 w-full" />
+
+            {/* PC端教程 */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <span className="bg-cyan-500/20 text-cyan-400 px-2 py-1 rounded text-xs font-bold border border-cyan-500/30 shrink-0">方法二</span>
+                <h4 className="text-gray-200 font-medium text-base">PC 端微信提取</h4>
+              </div>
+              <p className="text-gray-400 text-sm mb-4 leading-relaxed">
+                1. 在电脑版微信点击播放窗口下方的 <strong className="text-gray-200">分享按钮</strong>（如图左）<br/>
+                2. 点击弹出的 <strong className="text-cyan-400">复制链接</strong>（如图右）
+              </p>
+              <div className="grid grid-cols-2 gap-3 sm:gap-5">
+                <div className="rounded-xl overflow-hidden border border-white/10 bg-[#0a0f1a] relative">
+                  <div className="absolute top-2 left-2 bg-black/60 text-white/50 text-[10px] px-2 py-0.5 rounded backdrop-blur">图1</div>
+                  <img src="/pc_1.png" alt="PC端分享按钮" className="w-full h-auto object-contain max-h-[200px]" />
+                </div>
+                <div className="rounded-xl overflow-hidden border border-white/10 bg-[#0a0f1a] relative">
+                  <div className="absolute top-2 left-2 bg-black/60 text-white/50 text-[10px] px-2 py-0.5 rounded backdrop-blur">图2</div>
+                  <img src="/pc_2.png" alt="PC端复制链接" className="w-full h-auto object-contain max-h-[200px]" />
+                </div>
+              </div>
+            </div>
+            
+            {/* 确认按钮 */}
+            <button
+              onClick={onClose}
+              className="w-full py-3 mt-4 rounded-xl font-bold text-sm bg-gray-800 hover:bg-gray-700 text-white transition-colors"
+            >
+              我知道了
             </button>
           </div>
         </div>
@@ -330,6 +429,7 @@ export default function HomePage() {
   const [result, setResult] = useState<ParseResult | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [showModal, setShowModal] = useState(false);
+  const [showTutorial, setShowTutorial] = useState(false);
   const [proFlashing, setProFlashing] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -405,10 +505,18 @@ export default function HomePage() {
   // 点击解析按钮
   const handleParse = useCallback(() => {
     if (!url.trim()) return;
+    
     const token = localStorage.getItem('sph_token');
-    if (token === TODAY_TOKEN) {
+    const expireTime = localStorage.getItem('sph_token_expire');
+    const now = Date.now();
+    
+    // 验证 Token 匹配且未过期
+    if (token === TODAY_TOKEN && expireTime && now < parseInt(expireTime, 10)) {
       doParse(url.trim());
     } else {
+      // 过期或无效时清除旧数据
+      localStorage.removeItem('sph_token');
+      localStorage.removeItem('sph_token_expire');
       setShowModal(true);
     }
   }, [url, doParse]);
@@ -423,10 +531,48 @@ export default function HomePage() {
     if (e.key === 'Enter') handleParse();
   };
 
-  // 统计数字（仅展示用）
+  // 动态模拟统计数据
+  const [totalParse, setTotalParse] = useState(1842);
+  const [todaySuccess, setTodaySuccess] = useState(47);
+
+  useEffect(() => {
+    // 1. 根据当前日期生成基数 (从 2026-01-01 开始计算)
+    const startDate = new Date('2026-01-01').getTime();
+    const now = Date.now();
+    const daysPassed = Math.max(0, Math.floor((now - startDate) / (1000 * 60 * 60 * 24)));
+    
+    // 用当天的日期数字做一个伪随机波动因子 (0.00 ~ 0.99)
+    const todayNum = new Date().getDate(); 
+    const randomFactor = (todayNum * 13 % 100) / 100; 
+    
+    // 每天平均 300 个 (每天的波动通过 randomFactor 稍微扰动一下)
+    const dailyAvg = 300;
+    const baseTotal = 1500 + (daysPassed * dailyAvg) + Math.floor(randomFactor * 200 - 100);
+    
+    // 假设每小时平均增加 12 个今日解析
+    const hoursToday = new Date().getHours();
+    const baseToday = 15 + (hoursToday * 12) + Math.floor(randomFactor * 10);
+
+    setTotalParse(baseTotal);
+    setTodaySuccess(baseToday);
+
+    // 2. 定时跳动模拟真实请求流入 (降低频率，因为每天总量变小了)
+    const interval = setInterval(() => {
+      // 40% 的概率会增加
+      if (Math.random() > 0.6) {
+        setTotalParse(prev => prev + 1);
+        setTodaySuccess(prev => prev + 1);
+      }
+    }, 5000); // 每 5 秒判断一次
+
+    return () => clearInterval(interval);
+  }, []);
+
+  const formatNumber = (num: number) => num.toLocaleString('en-US');
+
   const stats = [
-    { label: '累计解析', value: '128,491', unit: '次' },
-    { label: '今日成功', value: '2,847', unit: '次' },
+    { label: '累计解析', value: formatNumber(totalParse), unit: '次' },
+    { label: '今日成功', value: formatNumber(todaySuccess), unit: '次' },
     { label: '平均耗时', value: '1.2', unit: 's' },
     { label: '服务可用', value: '99.9', unit: '%' },
   ];
@@ -443,7 +589,27 @@ export default function HomePage() {
         />
       )}
 
+      {/* 教程 Modal */}
+      {showTutorial && (
+        <TutorialModal onClose={() => setShowTutorial(false)} />
+      )}
+
       <main className="relative z-10 max-w-3xl mx-auto px-4 py-10 sm:py-16">
+
+        {/* 顶部返回主站按钮 */}
+        <div className="flex justify-center sm:justify-start mb-8 sm:-mt-6">
+          <a
+            href="https://51use.cn"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-2 text-gray-400 hover:text-white transition-all duration-300 bg-[#0d1520]/80 border border-white/10 hover:bg-white/10 hover:border-white/20 px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm backdrop-blur-xl group shadow-lg shadow-black/50"
+          >
+            <div className="bg-white/5 p-1 rounded-full group-hover:bg-green-500/20 transition-colors">
+              <Home size={14} className="group-hover:text-green-400 group-hover:scale-110 transition-all" />
+            </div>
+            <span className="font-medium tracking-wide">返回 51USE 工具站</span>
+          </a>
+        </div>
 
         {/* ── 顶部 LOGO / 标题区 ── */}
         <div className="text-center mb-10">
@@ -499,6 +665,18 @@ export default function HomePage() {
               className={`absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-green-400/40 to-transparent transition-opacity duration-300 ${inputFocused ? 'opacity-100' : 'opacity-0'
                 }`}
             />
+
+            {/* 提示栏 */}
+            <div className="flex justify-between items-center mb-3 px-1">
+              <span className="text-gray-400 text-xs sm:text-sm font-medium tracking-wide">请输入视频链接</span>
+              <button
+                onClick={() => setShowTutorial(true)}
+                className="flex items-center gap-1.5 text-green-400 hover:text-green-300 transition-colors text-xs font-mono border border-green-500/20 bg-green-500/10 px-3 py-1.5 rounded-full hover:bg-green-500/20 active:scale-95"
+              >
+                <HelpCircle size={14} />
+                如何获取分享链接？
+              </button>
+            </div>
 
             {/* 输入框 */}
             <div className="relative mb-4">
