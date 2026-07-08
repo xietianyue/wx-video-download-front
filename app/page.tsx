@@ -29,6 +29,8 @@ import {
 const TODAY_TOKEN = '51use888';
 const WORKER_API_URL = 'https://sph.litao.workers.dev/api/fetch_video_profile';
 const PRO_DOWNLOAD_LINK = 'https://tooldown.51use.cn/wx_video_download_20260601.zip';
+const PRO_TUTORIAL_LINK = 'https://mp.weixin.qq.com/s/TYFvDf_-AKBfEuxTm0AM7g';
+const PRO_ZIP_PASSWORD = '51use';
 const WECHAT_OA_NAME = '51use';
 
 // ============================================================
@@ -40,6 +42,32 @@ interface ParseResult {
   videoUrl: string;
   title?: string;
   thumb?: string;
+}
+
+interface ParseStats {
+  totalParse: number;
+  todaySuccess: number;
+}
+
+function getInitialParseStats(): ParseStats {
+  // 根据当前日期生成基数 (从 2026-01-01 开始计算)
+  const startDate = new Date('2026-01-01').getTime();
+  const now = Date.now();
+  const daysPassed = Math.max(0, Math.floor((now - startDate) / (1000 * 60 * 60 * 24)));
+
+  // 用当天的日期数字做一个伪随机波动因子 (0.00 ~ 0.99)
+  const todayNum = new Date().getDate();
+  const randomFactor = (todayNum * 13 % 100) / 100;
+
+  // 每天平均 300 个 (每天的波动通过 randomFactor 稍微扰动一下)
+  const dailyAvg = 300;
+  const totalParse = 1500 + (daysPassed * dailyAvg) + Math.floor(randomFactor * 200 - 100);
+
+  // 假设每小时平均增加 12 个今日解析
+  const hoursToday = new Date().getHours();
+  const todaySuccess = 15 + (hoursToday * 12) + Math.floor(randomFactor * 10);
+
+  return { totalParse, todaySuccess };
 }
 
 // ============================================================
@@ -336,9 +364,115 @@ function TutorialModal({ onClose }: { onClose: () => void }) {
 }
 
 // ============================================================
-// 子组件：Pro 极客版 Banner
+// 子组件：桌面版下载 Banner
 // ============================================================
-function ProBanner({ flashing }: { flashing: boolean }) {
+function ProDownloadGuideModal({
+  onClose,
+  onContinueDownload,
+}: {
+  onClose: () => void;
+  onContinueDownload: () => void;
+}) {
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+      <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={onClose} />
+
+      <div className="relative modal-enter w-full max-w-lg">
+        <div className="absolute -inset-px rounded-2xl bg-gradient-to-b from-yellow-500/40 via-yellow-500/10 to-transparent" />
+        <div className="relative bg-[#0d1520] rounded-2xl p-5 sm:p-6 border border-yellow-500/25 shadow-2xl shadow-black/60">
+          <button
+            type="button"
+            aria-label="关闭"
+            onClick={onClose}
+            className="absolute top-4 right-4 text-gray-500 hover:text-gray-300 transition-colors"
+          >
+            <X size={18} />
+          </button>
+
+          <div className="flex items-start gap-3 mb-5 pr-8">
+            <div className="w-11 h-11 rounded-xl bg-yellow-500/10 border border-yellow-500/30 flex items-center justify-center shrink-0">
+              <Package className="text-yellow-400" size={22} />
+            </div>
+            <div>
+              <h3 className="text-white font-bold text-lg">下载前请先查看使用教程</h3>
+              <p className="text-gray-500 text-xs mt-1">Desktop Download Guide</p>
+            </div>
+          </div>
+
+          <div className="bg-yellow-500/5 border border-yellow-500/20 rounded-xl p-4 mb-4">
+            <div className="flex gap-2.5">
+              <AlertTriangle className="text-yellow-400 shrink-0 mt-0.5" size={16} />
+              <p className="text-yellow-100/85 text-sm leading-relaxed">
+                视频号下载桌面版是加密压缩包。请先阅读教程，里面包含解压步骤、Win11 解除锁定方法和启动说明。
+              </p>
+            </div>
+          </div>
+
+          <div className="bg-[#0a0f1a] border border-green-500/25 rounded-xl p-4 mb-4 text-center">
+            <p className="text-gray-400 text-xs mb-2">解压密码</p>
+            <div className="text-green-300 text-3xl sm:text-4xl font-black font-mono tracking-widest">
+              {PRO_ZIP_PASSWORD}
+            </div>
+            <p className="text-gray-500 text-xs mt-2">密码就是 51use，不要输入空格</p>
+          </div>
+
+          <div className="space-y-2.5 text-sm text-gray-300 mb-5">
+            <div className="flex gap-2.5">
+              <CheckCircle className="text-green-400 shrink-0 mt-0.5" size={15} />
+              <span>建议先打开教程，确认解压密码和运行步骤。</span>
+            </div>
+            <div className="flex gap-2.5">
+              <CheckCircle className="text-green-400 shrink-0 mt-0.5" size={15} />
+              <span>Win11 解压报错时，教程里有“解除锁定”处理方法。</span>
+            </div>
+          </div>
+
+          <div className="bg-green-500/5 border border-green-500/20 rounded-xl p-4 mb-5 flex flex-col sm:flex-row items-center gap-4">
+            <div className="w-28 h-28 bg-white p-1.5 rounded-xl shadow-inner shrink-0">
+              <img src="/51use.jpg" alt="51use 公众号二维码" className="w-full h-full object-cover rounded-lg" />
+            </div>
+            <div className="text-center sm:text-left">
+              <p className="text-green-300 font-bold text-sm mb-1.5">
+                扫码关注公众号：{WECHAT_OA_NAME}
+              </p>
+              <p className="text-gray-300 text-sm leading-relaxed">
+                使用过程中有不懂的地方，可以关注后私信我。后续版本更新、服务变动和新工具也会在公众号里推送。
+              </p>
+            </div>
+          </div>
+
+          <div className="grid gap-3 sm:grid-cols-2">
+            <a
+              href={PRO_TUTORIAL_LINK}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center justify-center gap-2 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold text-sm transition-all duration-200 shadow-lg shadow-green-900/30"
+            >
+              <HelpCircle size={16} />
+              查看使用教程
+            </a>
+            <button
+              type="button"
+              onClick={onContinueDownload}
+              className="flex items-center justify-center gap-2 py-3 rounded-xl bg-yellow-500 hover:bg-yellow-400 text-black font-black text-sm transition-all duration-200 shadow-lg shadow-yellow-900/30"
+            >
+              <Download size={16} />
+              我已了解，继续下载
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ProBanner({
+  flashing,
+  onDownloadClick,
+}: {
+  flashing: boolean;
+  onDownloadClick: () => void;
+}) {
   return (
     <div
       id="pro-banner"
@@ -362,7 +496,7 @@ function ProBanner({ flashing }: { flashing: boolean }) {
             </div>
             <div className="sm:hidden">
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-yellow-400 font-black text-base">Pro 极客版</span>
+                <span className="text-yellow-400 font-black text-base">桌面版</span>
                 <span className="bg-yellow-500/20 text-yellow-300 text-xs px-2 py-0.5 rounded-full font-bold border border-yellow-500/30">
                   推荐
                 </span>
@@ -380,7 +514,7 @@ function ProBanner({ flashing }: { flashing: boolean }) {
             </div>
             <p className="hidden sm:block text-gray-300/80 text-sm leading-relaxed">
               请使用{' '}
-              <span className="text-yellow-300 font-bold">Pro 极客版（Windows 桌面端）</span>
+              <span className="text-yellow-300 font-bold">视频号下载桌面版（Windows）</span>
               ，采用本地网卡底层物理抓包技术，<span className="text-green-400 font-bold">成功率 100%</span>。
             </p>
 
@@ -403,17 +537,16 @@ function ProBanner({ flashing }: { flashing: boolean }) {
           </div>
 
           {/* 右侧下载按钮 */}
-          <a
+          <button
+            type="button"
             id="pro-download-btn"
-            href={PRO_DOWNLOAD_LINK}
-            target="_blank"
-            rel="noopener noreferrer"
+            onClick={onDownloadClick}
             className="shrink-0 flex items-center gap-2 bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-black font-black text-sm px-5 py-3 rounded-xl transition-all duration-200 shadow-lg shadow-yellow-900/40 hover:shadow-yellow-900/60 hover:scale-105 active:scale-95"
           >
             <Package size={16} />
-            <span className="whitespace-nowrap">下载 Pro 极客版 (ZIP)</span>
+            <span className="whitespace-nowrap">下载桌面版 (ZIP)</span>
             <ChevronRight size={14} />
-          </a>
+          </button>
         </div>
       </div>
     </div>
@@ -430,6 +563,7 @@ export default function HomePage() {
   const [errorMsg, setErrorMsg] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [showTutorial, setShowTutorial] = useState(false);
+  const [showProDownloadGuide, setShowProDownloadGuide] = useState(false);
   const [proFlashing, setProFlashing] = useState(false);
   const [inputFocused, setInputFocused] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -527,41 +661,27 @@ export default function HomePage() {
     doParse(url.trim());
   }, [url, doParse]);
 
+  const handleContinueProDownload = useCallback(() => {
+    setShowProDownloadGuide(false);
+    window.open(PRO_DOWNLOAD_LINK, '_blank', 'noopener,noreferrer');
+  }, []);
+
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleParse();
   };
 
   // 动态模拟统计数据
-  const [totalParse, setTotalParse] = useState(1842);
-  const [todaySuccess, setTodaySuccess] = useState(47);
+  const [{ totalParse, todaySuccess }, setParseStats] = useState<ParseStats>(() => getInitialParseStats());
 
   useEffect(() => {
-    // 1. 根据当前日期生成基数 (从 2026-01-01 开始计算)
-    const startDate = new Date('2026-01-01').getTime();
-    const now = Date.now();
-    const daysPassed = Math.max(0, Math.floor((now - startDate) / (1000 * 60 * 60 * 24)));
-    
-    // 用当天的日期数字做一个伪随机波动因子 (0.00 ~ 0.99)
-    const todayNum = new Date().getDate(); 
-    const randomFactor = (todayNum * 13 % 100) / 100; 
-    
-    // 每天平均 300 个 (每天的波动通过 randomFactor 稍微扰动一下)
-    const dailyAvg = 300;
-    const baseTotal = 1500 + (daysPassed * dailyAvg) + Math.floor(randomFactor * 200 - 100);
-    
-    // 假设每小时平均增加 12 个今日解析
-    const hoursToday = new Date().getHours();
-    const baseToday = 15 + (hoursToday * 12) + Math.floor(randomFactor * 10);
-
-    setTotalParse(baseTotal);
-    setTodaySuccess(baseToday);
-
-    // 2. 定时跳动模拟真实请求流入 (降低频率，因为每天总量变小了)
+    // 定时跳动模拟真实请求流入 (降低频率，因为每天总量变小了)
     const interval = setInterval(() => {
       // 40% 的概率会增加
       if (Math.random() > 0.6) {
-        setTotalParse(prev => prev + 1);
-        setTodaySuccess(prev => prev + 1);
+        setParseStats(prev => ({
+          totalParse: prev.totalParse + 1,
+          todaySuccess: prev.todaySuccess + 1,
+        }));
       }
     }, 5000); // 每 5 秒判断一次
 
@@ -592,6 +712,14 @@ export default function HomePage() {
       {/* 教程 Modal */}
       {showTutorial && (
         <TutorialModal onClose={() => setShowTutorial(false)} />
+      )}
+
+      {/* Pro 下载前教程提醒 Modal */}
+      {showProDownloadGuide && (
+        <ProDownloadGuideModal
+          onClose={() => setShowProDownloadGuide(false)}
+          onContinueDownload={handleContinueProDownload}
+        />
       )}
 
       <main className="relative z-10 max-w-3xl mx-auto px-4 py-10 sm:py-16">
@@ -805,15 +933,18 @@ export default function HomePage() {
                 <p className="text-red-300 font-bold text-sm mb-1">解析失败</p>
                 <p className="text-gray-400 text-sm">{errorMsg}</p>
                 <p className="text-gray-500 text-xs mt-2 font-mono">
-                  建议：请检查链接格式，或使用下方 Pro 极客版重试
+                  建议：请检查链接格式，或使用下方桌面版重试
                 </p>
               </div>
             </div>
           </div>
         )}
 
-        {/* ── Pro 极客版 Banner ── */}
-        <ProBanner flashing={proFlashing} />
+        {/* ── 桌面版下载 Banner ── */}
+        <ProBanner
+          flashing={proFlashing}
+          onDownloadClick={() => setShowProDownloadGuide(true)}
+        />
 
         {/* ── 底部说明 ── */}
         <div className="mt-8 grid grid-cols-3 gap-4 text-center">
