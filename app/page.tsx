@@ -26,7 +26,8 @@ import {
 // ============================================================
 // 配置常量（部署前修改这两个值）
 // ============================================================
-const TODAY_TOKEN = '51use888';
+const SPH_VERIFY_API_URL = 'https://keygen.51use.cn/api/verify-sph-code';
+const SPH_VERIFIED_TOKEN = 'verified';
 const WORKER_API_URL = 'https://sph.litao.workers.dev/api/fetch_video_profile';
 const PRO_DOWNLOAD_LINK = 'https://tooldown.51use.cn/wx_video_download_20260601.zip';
 const PRO_TUTORIAL_LINK = 'https://mp.weixin.qq.com/s/TYFvDf_-AKBfEuxTm0AM7g';
@@ -121,26 +122,54 @@ function AuthModal({
   const [showPwd, setShowPwd] = useState(false);
   const [error, setError] = useState('');
   const [shaking, setShaking] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     inputRef.current?.focus();
   }, []);
 
-  const handleVerify = useCallback(() => {
-    if (input === TODAY_TOKEN) {
-      localStorage.setItem('sph_token', TODAY_TOKEN);
-      // 设置3天后过期 (毫秒)
-      localStorage.setItem('sph_token_expire', (Date.now() + 3 * 24 * 60 * 60 * 1000).toString());
-      onSuccess();
-    } else {
-      setError('通行证错误，请重新获取');
+  const handleVerify = useCallback(async () => {
+    const code = input.trim();
+    if (!code || verifying) return;
+
+    setVerifying(true);
+    setError('');
+
+    try {
+      const res = await fetch(SPH_VERIFY_API_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ code }),
+        signal: AbortSignal.timeout(10000),
+      });
+      const data = await res.json();
+
+      if (res.ok && data.success) {
+        localStorage.setItem('sph_token', SPH_VERIFIED_TOKEN);
+        localStorage.setItem('sph_token_expire', String(data.expireAt || Date.now()));
+        localStorage.setItem('sph_token_date', String(data.date || ''));
+        onSuccess();
+        return;
+      }
+
+      throw new Error(data.message || '通行证错误，请重新获取');
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error
+          ? err.name === 'TimeoutError'
+            ? '验证超时，请稍后重试'
+            : err.message
+          : '通行证错误，请重新获取';
+      setError(message);
       setShaking(true);
       setTimeout(() => setShaking(false), 600);
       setInput('');
       inputRef.current?.focus();
+    } finally {
+      setVerifying(false);
     }
-  }, [input, onSuccess]);
+  }, [input, onSuccess, verifying]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') handleVerify();
@@ -202,23 +231,22 @@ function AuthModal({
               <div className="flex gap-2.5 items-start">
                 <Radio className="text-green-400 shrink-0 mt-0.5" size={16} />
                 <div className="text-sm text-gray-300 leading-relaxed">
-                  <p>📱 微信搜索或长按扫码关注</p>
-                  <p className="font-bold text-green-400 my-1.5 text-base">
-                    【{WECHAT_OA_NAME}】
-                  </p>
-                  <p>
-                    回复关键字{' '}
-                    <span className="bg-green-500/20 text-green-300 px-2 py-0.5 rounded font-mono text-xs">
-                      视频号
-                    </span>{' '}
-                    获取最新通行证
-                  </p>
+                  <p className="font-bold text-gray-100">扫码关注公众号</p>
+                  <p>私信回复关键字</p>
+                  <div className="inline-flex bg-green-500/20 text-green-300 px-3 py-1 rounded font-mono text-sm font-bold my-1">
+                    视频号
+                  </div>
+                  <p>获取今日通行证</p>
+                  <p className="text-gray-500 text-xs mt-1">通行证每天更新，当天有效。</p>
                 </div>
               </div>
             </div>
             {/* 二维码展示区 */}
-            <div className="shrink-0 w-32 h-32 sm:w-36 sm:h-36 bg-white p-1.5 rounded-xl shadow-inner mx-auto">
-              <img src="/51use.jpg" alt="公众号二维码" className="w-full h-full object-cover rounded-lg" />
+            <div className="shrink-0 mx-auto text-center">
+              <div className="w-32 h-32 sm:w-36 sm:h-36 bg-white p-1.5 rounded-xl shadow-inner">
+                <img src="/51use.jpg" alt="公众号二维码" className="w-full h-full object-cover rounded-lg" />
+              </div>
+              <p className="font-bold text-green-400 mt-2 text-sm">公众号：【{WECHAT_OA_NAME}】</p>
             </div>
           </div>
 
@@ -235,11 +263,11 @@ function AuthModal({
                 type={showPwd ? 'text' : 'password'}
                 value={input}
                 onChange={(e) => {
-                  setInput(e.target.value);
+                  setInput(e.target.value.replace(/\D/g, '').slice(0, 4));
                   setError('');
                 }}
                 onKeyDown={handleKeyDown}
-                placeholder="请输入今日通行证..."
+                placeholder="请输入4位通行证..."
                 className="w-full bg-[#0a0f1a] border border-gray-700/50 focus:border-green-500/60 rounded-xl px-10 py-3 text-white placeholder-gray-600 outline-none transition-all text-sm font-mono tracking-widest"
               />
               <button
@@ -259,13 +287,14 @@ function AuthModal({
             )}
 
             <button
+              type="button"
               id="verify-btn"
               onClick={handleVerify}
-              disabled={!input}
+              disabled={!input || verifying}
               className="w-full py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 disabled:opacity-40 disabled:cursor-not-allowed text-white font-bold text-sm transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-green-900/30"
             >
-              <CheckCircle size={16} />
-              验证通行证
+              {verifying ? <Loader2 size={16} className="animate-spin" /> : <CheckCircle size={16} />}
+              {verifying ? '正在验证...' : '验证通行证'}
             </button>
           </div>
         </div>
@@ -644,13 +673,14 @@ export default function HomePage() {
     const expireTime = localStorage.getItem('sph_token_expire');
     const now = Date.now();
     
-    // 验证 Token 匹配且未过期
-    if (token === TODAY_TOKEN && expireTime && now < parseInt(expireTime, 10)) {
+    // 验证当天通行证已通过且未过期
+    if (token === SPH_VERIFIED_TOKEN && expireTime && now < parseInt(expireTime, 10)) {
       doParse(url.trim());
     } else {
       // 过期或无效时清除旧数据
       localStorage.removeItem('sph_token');
       localStorage.removeItem('sph_token_expire');
+      localStorage.removeItem('sph_token_date');
       setShowModal(true);
     }
   }, [url, doParse]);
@@ -917,7 +947,7 @@ export default function HomePage() {
               </a>
 
               <p className="text-center text-gray-600 text-xs mt-3 font-mono">
-                ⚠️ 如下载受阻，请右键视频播放器 → 另存为
+                ⚠️ 如下载受阻，可点击视频右下角三个点 → 下载，或右键视频播放器 → 另存为
               </p>
             </div>
           </div>
@@ -965,10 +995,19 @@ export default function HomePage() {
         </div>
 
         {/* Footer */}
-        <div className="text-center mt-10 text-gray-700 text-xs font-mono space-y-1">
-          <p>本工具仅供个人学习与研究使用，请勿用于商业或违法用途</p>
-          <p className="text-gray-800">
-            © 2025 SPH Parser · Powered by Cloudflare Workers
+        <div className="text-center mt-10 text-xs space-y-2">
+          <p className="text-gray-600">本工具仅供个人学习与研究使用，请勿用于商业或违法用途</p>
+          <p className="text-gray-700">
+            由{' '}
+            <a
+              href="https://51use.cn"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-green-400/80 hover:text-green-300 font-bold transition-colors"
+            >
+              51use 工具站
+            </a>{' '}
+            提供 · 视频号解析工具
           </p>
         </div>
       </main>
