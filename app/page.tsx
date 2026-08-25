@@ -3,6 +3,7 @@ import {
   ChevronRight,
   Home,
   MessageCircle,
+  MonitorUp,
   MousePointerClick,
   QrCode,
   Search,
@@ -82,6 +83,24 @@ export default function HomePage() {
             <figure className="mx-auto flex h-[232px] w-[232px] flex-col overflow-hidden rounded-2xl border border-cyan-400/20 bg-[#080c14] p-1.5 shadow-lg shadow-cyan-950/30 sm:h-[264px] sm:w-[264px]">
               <Image src="/search.png" alt="电脑版微信搜索 51use 后的小程序结果示例" width={404} height={504} className="min-h-0 flex-1 rounded-lg object-contain" />
               <figcaption className="px-1 pt-1.5 text-center text-[10px] text-cyan-200/70">搜索结果示例</figcaption>
+            </figure>
+          </div>
+        </section>
+
+        <section className="mt-5 rounded-3xl border border-blue-500/20 bg-blue-500/5 p-5 sm:min-h-[330px] sm:p-8">
+          <div className="grid items-center gap-7 sm:grid-cols-[1fr_264px] sm:gap-9">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 rounded-xl border border-blue-400/25 bg-blue-400/10 p-2 text-blue-300"><MonitorUp size={19} /></div>
+              <div>
+                <h2 className="font-bold text-blue-100">扫码后，也能一键在电脑打开</h2>
+                <p className="mt-1 text-sm leading-6 text-gray-400">手机微信扫码进入小程序后，点击右上角的 <strong className="font-medium text-blue-200">“…”</strong>，在下方菜单选择 <strong className="font-medium text-blue-200">“在电脑上打开”</strong>。</p>
+                <div className="mt-3 inline-flex items-center gap-2 rounded-lg border border-blue-400/20 bg-[#080c14]/70 px-3 py-2 font-mono text-sm text-blue-300"><MousePointerClick size={16} /> … &nbsp;→&nbsp; <strong>在电脑上打开</strong></div>
+                <p className="mt-2 text-xs leading-5 text-gray-500">适合已用手机扫码进入小程序的用户，可直接把当前小程序同步到电脑版微信。</p>
+              </div>
+            </div>
+            <figure className="mx-auto flex h-[232px] w-[232px] flex-col overflow-hidden rounded-2xl border border-blue-400/20 bg-[#080c14] p-1.5 shadow-lg shadow-blue-950/30 sm:h-[264px] sm:w-[264px]">
+              <Image src="/tis.png" alt="小程序右上角菜单中选择在电脑上打开的示例" width={423} height={900} className="min-h-0 flex-1 rounded-lg object-contain" />
+              <figcaption className="px-1 pt-1.5 text-center text-[10px] text-blue-200/70">“在电脑上打开”示例</figcaption>
             </figure>
           </div>
         </section>
