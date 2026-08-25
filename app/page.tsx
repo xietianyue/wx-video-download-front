@@ -48,8 +48,8 @@ export default function HomePage() {
             <span className="h-2 w-2 animate-pulse rounded-full bg-green-400" />
             <span className="font-mono text-xs uppercase tracking-widest text-green-400">Mini Program Service Online</span>
           </div>
-          <h1 className="mb-3 text-4xl font-black leading-tight text-white sm:text-5xl">视频号 <span className="bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent">无水印</span> 解析</h1>
-          <p className="mx-auto max-w-xl text-base leading-relaxed text-gray-400 sm:text-lg">请通过微信小程序解析视频，操作更便捷，解析完成后即可保存高清视频。</p>
+          <h1 className="mb-3 text-4xl font-black leading-tight text-white sm:text-5xl">多平台 <span className="bg-gradient-to-r from-green-400 to-emerald-300 bg-clip-text text-transparent">无水印</span> 解析</h1>
+          <p className="mx-auto max-w-xl text-base leading-relaxed text-gray-400 sm:text-lg">支持微信视频号、抖音、Bilibili 三大平台，打开小程序即可解析并保存高清视频。</p>
         </section>
 
         <section className="relative mt-9 overflow-hidden rounded-3xl border border-green-500/25 bg-[#0d1520]/90 p-5 shadow-2xl shadow-green-950/30 backdrop-blur-xl sm:min-h-[330px] sm:p-8">
@@ -58,13 +58,13 @@ export default function HomePage() {
             <div className="order-2 text-center sm:order-1 sm:text-left">
               <div className="mb-3 flex items-center justify-center gap-2 sm:justify-start"><Smartphone className="text-green-400" size={21} /><span className="font-mono text-sm font-bold tracking-wide text-green-300">微信扫码访问</span></div>
               <h2 className="text-2xl font-black text-white sm:text-3xl">打开小程序，开始解析</h2>
-              <p className="mt-3 text-sm leading-7 text-gray-400">使用手机微信扫一扫右侧小程序码，进入后粘贴视频号分享链接即可解析。无需下载桌面软件。</p>
+              <p className="mt-3 text-sm leading-7 text-gray-400">使用手机微信扫一扫右侧小程序码，进入后粘贴各平台的视频分享链接即可解析。无需下载桌面软件。</p>
               <div className="mt-5 flex flex-wrap justify-center gap-2 sm:justify-start">
-                {['免费使用', '高清视频', '手机端解析'].map((item) => <span key={item} className="inline-flex items-center gap-1.5 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1.5 text-xs text-green-300"><CheckCircle2 size={13} />{item}</span>)}
+                {['微信视频号', '抖音', 'Bilibili'].map((item) => <span key={item} className="inline-flex items-center gap-1.5 rounded-full border border-green-500/20 bg-green-500/10 px-3 py-1.5 text-xs text-green-300"><CheckCircle2 size={13} />{item}</span>)}
               </div>
             </div>
             <div className="order-1 mx-auto flex h-[232px] w-[232px] shrink-0 items-center justify-center rounded-2xl bg-white p-3 shadow-[0_0_35px_rgba(74,222,128,0.2)] sm:order-2 sm:h-[264px] sm:w-[264px]">
-              <Image src="/51use-miniprogram.jpg" alt="51USE 视频号解析微信小程序码，请使用手机微信扫码" width={260} height={260} className="h-full w-full rounded-xl object-contain" priority />
+              <Image src="/51use-miniprogram.jpg" alt="51USE 多平台视频解析微信小程序码，请使用手机微信扫码" width={260} height={260} className="h-full w-full rounded-xl object-contain" priority />
             </div>
           </div>
         </section>
@@ -108,7 +108,7 @@ export default function HomePage() {
         <section className="mt-7 grid gap-3 sm:grid-cols-3">
           {[
             { icon: <QrCode size={19} />, title: '第一步', desc: '手机微信扫一扫小程序码', color: 'text-green-400' },
-            { icon: <MousePointerClick size={19} />, title: '第二步', desc: '粘贴视频号分享链接', color: 'text-cyan-400' },
+            { icon: <MousePointerClick size={19} />, title: '第二步', desc: '粘贴各平台视频分享链接', color: 'text-cyan-400' },
             { icon: <Zap size={19} />, title: '第三步', desc: '解析并保存高清视频', color: 'text-purple-400' },
           ].map((item) => <div key={item.title} className="rounded-xl border border-white/8 bg-white/[0.03] p-4 text-center"><div className={`mb-2 flex justify-center ${item.color}`}>{item.icon}</div><h3 className="text-sm font-bold text-white">{item.title}</h3><p className="mt-1 text-xs text-gray-500">{item.desc}</p></div>)}
         </section>
